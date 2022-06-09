@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[11]:
 
 
 mainQuery= {
@@ -42,12 +42,13 @@ actions= {
     "tbvariants":["Tb variants"],
     "covidMeds": ["covidMedications"],
     "tbMeds": ["Tb meds"],
-    "asthmaMeds":["asthma meds"]
+    "asthmaMeds":["asthma meds"],
+    "unrelated": ["sorry I can only answer for question I am allowed to."]
 
 }
 
 
-# In[4]:
+# In[12]:
 
 
 def getContext(text):
@@ -81,7 +82,7 @@ def getContext(text):
     return(diseaseaseContext, contexta, contextb)
 
 
-# In[5]:
+# In[13]:
 
 
 states= list()
@@ -92,7 +93,7 @@ for key in sorted(mainQuery):
 print(states[7])
 
 
-# In[6]:
+# In[14]:
 
 
 print (len(states))
@@ -100,7 +101,7 @@ print (len(actions))
 
 
 
-# In[7]:
+# In[15]:
 
 
 import numpy as np
@@ -119,7 +120,7 @@ for i,action in enumerate(actions):
 
 
 
-# In[8]:
+# In[16]:
 
 
 #reward map----- old state to new state reward
@@ -132,49 +133,83 @@ for i,lastState in enumerate(states):
             reward[i][j] =1
 
 
-# In[9]:
+# In[17]:
 
 
+qTable= np.zeros((len(states), len(actions)), dtype=float)
+with open('test.npy','rb')as f:
+    f.seek(0)
+    loadedFile=np.load(f ,allow_pickle=False)
+    if loadedFile.shape== qTable.shape:
+        
+        qTable=loadedFile
+        print("Loaded old backup")
+
+
+# Qtable Training
+
+# In[19]:
+
+
+import random
 #start q learn algo
 # Initialize parameters
 gamma = 0.75 # Discount factor 
 alpha = 0.9 # Learning rate 
-
-
-# In[10]:
-
-
-qTable= np.zeros((len(states), len(actions)), dtype=float)
-
-
-# In[13]:
-
-
-#lets defie an episode
+epsilon = 0.1
+next_stateIndex=0
+stateIndex=0
+actionNumber=0
 episodeRun=True
+reward=0
+prevState=0
 while episodeRun:
-    text=input("")
+    text=input("Text:")
     state=getContext(text)
     stateIndex=statetoNumber[state]
-    actionNumber=np.argmax(qTable[stateIndex])
-    print(actions[numbertoAction[actionNumber]])
 
+    next_max = np.max(qTable[stateIndex])
+    
+    old_value = qTable[prevState][actionNumber]
+    print(old_value)
+    new_value=(1 - alpha) * old_value + alpha * (reward + gamma * next_max)
+    
+    qTable[prevState][actionNumber] = new_value
+
+    prevState=stateIndex
+
+    if np.random.uniform(0, 1) < epsilon:
+            actionNumber = random.randint(0,len(actions))# Explore action space
+    else:
+            actionNumber= np.argmax(qTable[stateIndex]) # Exploit learned values
+
+    print(numbertoAction[actionNumber])
+        
     feedback=input("Helpful Y/N? or Quit Q").lower()
     if feedback=='y':
-        qTable[stateIndex][actionNumber]+=1
+        reward=1
     elif feedback=='n':
-        qTable[stateIndex][actionNumber]-=1
+        reward=-1
     else:
         episodeRun=False
+    print(new_value)
 
-print(qTable)
+#print(qTable)
+#print(qTable)
 
 
-# In[14]:
+# In[9]:
 
 
 #plot the map to see differences
 import matplotlib.pyplot as plt
 plt.imshow( qTable, cmap = 'rainbow' , interpolation = 'bilinear')
 plt.title("Matplotlib PLot NumPy Array") 
+
+
+# In[10]:
+
+
+with open('test.npy', 'wb') as f:
+    np.save(f, qTable)
 
