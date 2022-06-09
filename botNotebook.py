@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[11]:
+# In[64]:
 
 
 mainQuery= {
@@ -43,46 +43,55 @@ actions= {
     "covidMeds": ["covidMedications"],
     "tbMeds": ["Tb meds"],
     "asthmaMeds":["asthma meds"],
-    "unrelated": ["sorry I can only answer for question I am allowed to."]
+    "unrelated": ["sorry I can only answer for question I am allowed to."],
+    "nocontext":[""]
 
 }
 
 
-# In[12]:
+# In[65]:
 
 
-def getContext(text):
-    diseaseaseContext="nocontext"
-    contexta="nocontext"
-    contextb="nocontext"
+diseaseaseContext="nocontext"
+contexta="nocontext"
+contextb="nocontext"
+def getContext(text, prevContext):
+    text=text.lower()
+    keys= list(prevContext)
     for key in mainQuery:
         for keyword in mainQuery[key]:
-            if keyword in text:
-                diseaseaseContext=key
+            if keyword.lower() in text:
+                if key=="nocontext":
+                    continue
+                keys[0]=key
                 break
         else:
             continue
         break
     for key in context1:
         for keyword in context1[key]:
-            if keyword in text:
-                contexta=key
+            if keyword.lower()  in text:
+                if key=="nocontext":
+                    continue
+                keys[1]=key
                 break
         else:
             continue
         break
     for key in context2:
         for keyword in context2[key]:
-            if keyword in text:
-                contextb=key
+            if keyword.lower()  in text:
+                if key=="nocontext":
+                    continue
+                keys[2]=key
                 break
         else:
             continue
         break
-    return(diseaseaseContext, contexta, contextb)
+    return (keys[0], keys[1], keys[2])
 
 
-# In[13]:
+# In[66]:
 
 
 states= list()
@@ -93,7 +102,7 @@ for key in sorted(mainQuery):
 print(states[7])
 
 
-# In[14]:
+# In[67]:
 
 
 print (len(states))
@@ -101,7 +110,7 @@ print (len(actions))
 
 
 
-# In[15]:
+# In[68]:
 
 
 import numpy as np
@@ -120,7 +129,7 @@ for i,action in enumerate(actions):
 
 
 
-# In[16]:
+# In[69]:
 
 
 #reward map----- old state to new state reward
@@ -133,7 +142,7 @@ for i,lastState in enumerate(states):
             reward[i][j] =1
 
 
-# In[17]:
+# In[70]:
 
 
 qTable= np.zeros((len(states), len(actions)), dtype=float)
@@ -141,14 +150,14 @@ with open('test.npy','rb')as f:
     f.seek(0)
     loadedFile=np.load(f ,allow_pickle=False)
     if loadedFile.shape== qTable.shape:
-        
+        pass
         qTable=loadedFile
         print("Loaded old backup")
 
 
 # Qtable Training
 
-# In[19]:
+# In[71]:
 
 
 import random
@@ -162,10 +171,12 @@ stateIndex=0
 actionNumber=0
 episodeRun=True
 reward=0
-prevState=0
+
+prevContext= ("nocontext", "nocontext", "nocontext")
+prevState=statetoNumber[prevContext]
 while episodeRun:
-    text=input("Text:")
-    state=getContext(text)
+    text=input("")
+    state=getContext(text, numbertoState[prevState])
     stateIndex=statetoNumber[state]
 
     next_max = np.max(qTable[stateIndex])
@@ -175,15 +186,16 @@ while episodeRun:
     new_value=(1 - alpha) * old_value + alpha * (reward + gamma * next_max)
     
     qTable[prevState][actionNumber] = new_value
-
+    print(new_value)
     prevState=stateIndex
+    print(numbertoState[stateIndex])
 
     if np.random.uniform(0, 1) < epsilon:
             actionNumber = random.randint(0,len(actions))# Explore action space
     else:
             actionNumber= np.argmax(qTable[stateIndex]) # Exploit learned values
 
-    print(numbertoAction[actionNumber])
+    print(actions[numbertoAction[actionNumber]])
         
     feedback=input("Helpful Y/N? or Quit Q").lower()
     if feedback=='y':
@@ -192,13 +204,11 @@ while episodeRun:
         reward=-1
     else:
         episodeRun=False
-    print(new_value)
 
 #print(qTable)
-#print(qTable)
 
 
-# In[9]:
+# In[ ]:
 
 
 #plot the map to see differences
@@ -207,9 +217,18 @@ plt.imshow( qTable, cmap = 'rainbow' , interpolation = 'bilinear')
 plt.title("Matplotlib PLot NumPy Array") 
 
 
-# In[10]:
+# In[ ]:
 
 
 with open('test.npy', 'wb') as f:
     np.save(f, qTable)
+
+
+# In[ ]:
+
+
+print (qTable[33])
+print(numbertoState[33])
+print(numbertoAction[np.argmax(qTable[33])])
+print(statetoNumber[("nocontext","nocontext","nocontext")])
 
