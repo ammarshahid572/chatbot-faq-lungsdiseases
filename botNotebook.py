@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[64]:
+# In[2]:
 
 
 mainQuery= {
@@ -15,41 +15,48 @@ mainQuery= {
 context1 = {
     "diagnosis":["if i have", "if he has", "if she has", "if they have", "diagnosis"],
     "medications": ["treatment", "medications", "medicine"],
+    "symptoms":["symptoms"],
     "types":["types", "variants", "stages"],
-    "facts":["what is that?","tell me", "when did", "what happens"],
     "nocontext":[""]
 }
 
 context2= {
     "sideeffects":["side effects", "careful", "effects"],
-    "preparation":["preparation", "prepare for", "requirements"],
     "duration": ["how long", "duration"],
     "nocontext":[""]
 }
 
 actions= {
     "greeting": ["Hello"],
-    "asthmaDef": ["Asthma Definition"],
-    "covidDef": ["Covid Definition"],
-    "tbDef": ["Covid Definition"],
+    "whatCanIhelp":["Sure, what can I help you with"],
+    "asthmaDef": ["Asthma is a disease that affects your lungs. It is one of the most common long-term diseases of children, but adults can have asthma, too. Asthma causes wheezing, breathlessness, chest tightness, and coughing at night or early in the morning. "],
+    "covidDef": ["Coronaviruses are a family of viruses that can cause respiratory illness in humans. They are called “corona” because of crown-like spikes on the surface of the virus."],
+    "tbDef": ["Tuberculosis (TB) is a bacterial infection spread through inhaling tiny droplets from the coughs or sneezes of an infected person. It mainly affects the lungs, but it can affect any part of the body, including the tummy (abdomen), glands, bones and nervous system."],
     "endNote": ["Thanks for chatting"],
-    "covidDiag":["PCR Test"],
-    "asthmaDiag":["Asthma Diagnosis"],
-    "tbDiag":["Tb diagnosis"],
-    "noContext": ["Sorry didnt Understand the question. please specify in details"],
-    "covidvariants": ["covid variants"],
-    "ashtmavariants": ["asthma variants"],
-    "tbvariants":["Tb variants"],
-    "covidMeds": ["covidMedications"],
-    "tbMeds": ["Tb meds"],
-    "asthmaMeds":["asthma meds"],
+    "covidDiag":["Covid is most accurately detected using PCR tests."],
+    "asthmaDiag":["There are 2 main tests to diagnose Asthma: FeNo and Spirometry"],
+    "tbDiag":["There are two basic tests used for TB. TB Skin Test and TB Blood Test."],
+    "noContext": ["Sorry didnt understand the question. please specify in details or try rephrasing."],
+    "covidvariants": ["Sars-Cov-2 has had many circulating virus namely Alpha, Beta, Gamma, Delta and Omicron"],
+    "ashtmavariants": ["Asthma has these common types: Allergic Asthma, Non-allergic Asthma, Cough-variant asthma, Noturnal and Occupational Asthma"],
+    "tbvariants":["There are two types of TB conditions: TB disease and latent TB infection. "],
+    "covidMeds": ["Scientists around the world are working to find and develop treatments for COVID-19. However preventive vaccinations are commonly available."],
+    "tbMeds": ["The most common treatment for active TB is isoniazid INH in combination with three other drugs—rifampin, pyrazinamide and ethambutol."],
+    "asthmaMeds":["There's currently no cure for asthma, but treatment can help control the symptoms so you're able to live a normal, active life. Inhalers, which are devices that let you breathe in medicine, are the main treatment. Tablets and other treatments may also be needed if your asthma is severe."],
+    "asthmaduration": ["Asthma symptoms can show up for a few times a month to several times a day/"],
+    "covidDuration":["Generally covid lasts for about 2 weeks."],
+    "tbduration": ["TB treatment can take anywhere between 6 to 9 months"],
+    "asthmaMedSide": ["The most common side effects of inhaled preventer medication (inhaled corticosteroids) are a hoarse voice, sore mouth and throat, and fungal infections of the throat. "],
+    "covidMedSide":["Covid Vaccination has minor side effects ranging for mild fever and weakness"],
+    "tbMedSide":["some side effects of TB treatments are itchy skin ,skin rashes, bruising or yellow skin, upset stomach, nausea, vomiting, diarrhoea or loss of appetite"],
+    "asthmaSymptoms":["Asthma attacks signs include wheezing, coughing and chest tightness becoming severe and constant, being too breathless to eat, speak or sleep, drowsiness, confusion, exhaustion or dizziness"],
+    "covidSymptoms":["Most common symptoms of covid are fever, cough, tiredness,loss of taste or smell"],
+    "tbSymptoms":["Some symptoms of TB are a persistent cough that lasts more than 3 weeks and usually brings up phlegm, which may be bloody, weight loss, night sweats, high temperature, tiredness and fatigue."],
     "unrelated": ["sorry I can only answer for question I am allowed to."],
-    "nocontext":[""]
-
 }
 
 
-# In[65]:
+# In[3]:
 
 
 diseaseaseContext="nocontext"
@@ -73,7 +80,7 @@ def getContext(text, prevContext):
             if keyword.lower()  in text:
                 if key=="nocontext":
                     continue
-                keys[1]=key
+                keys[3]=key
                 break
         else:
             continue
@@ -83,26 +90,28 @@ def getContext(text, prevContext):
             if keyword.lower()  in text:
                 if key=="nocontext":
                     continue
-                keys[2]=key
+                keys[4]=key
                 break
         else:
             continue
         break
-    return (keys[0], keys[1], keys[2])
+    return (keys[0], keys[1], keys[2], keys[3], keys[4])
 
 
-# In[66]:
+# In[5]:
 
 
 states= list()
 for key in sorted(mainQuery):
     for context in sorted(context1):
-        for  intent in sorted(context2):
-            states.append((key,context, intent))
+        for  intent1 in sorted(context2):
+            for intents2 in sorted(context1):
+                for intent3 in sorted(context2):
+                    states.append((key, context, intent1, intents2, intent3))
 print(states[7])
 
 
-# In[67]:
+# In[6]:
 
 
 print (len(states))
@@ -172,9 +181,10 @@ actionNumber=0
 episodeRun=True
 reward=0
 
-prevContext= ("nocontext", "nocontext", "nocontext")
+prevContext= ("nocontext", "nocontext", "nocontext", "nocontext", "nocontext")
 prevState=statetoNumber[prevContext]
 while episodeRun:
+
     text=input("")
     state=getContext(text, numbertoState[prevState])
     stateIndex=statetoNumber[state]
@@ -186,7 +196,7 @@ while episodeRun:
     new_value=(1 - alpha) * old_value + alpha * (reward + gamma * next_max)
     
     qTable[prevState][actionNumber] = new_value
-    print(new_value)
+
     prevState=stateIndex
     print(numbertoState[stateIndex])
 
@@ -230,5 +240,4 @@ with open('test.npy', 'wb') as f:
 print (qTable[33])
 print(numbertoState[33])
 print(numbertoAction[np.argmax(qTable[33])])
-print(statetoNumber[("nocontext","nocontext","nocontext")])
 

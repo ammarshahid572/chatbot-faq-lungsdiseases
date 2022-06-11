@@ -1,0 +1,26 @@
+<html>
+<body>
+
+<h1>JSON parse()</h1>
+
+<p>JSON.parse() parses a string, written in JSON format, and returns a JavaScript object.</p>
+
+<p>The value of "firstName" is:</p>
+
+<p id="demo"></p>
+
+<script>
+var data= '{{ data | tojson | safe}}';
+
+var obj = JSON.parse(data);
+
+console.log(obj.history);
+for (let chat in obj.history) {
+    console.log(chat);
+    console.log(obj.history[chat].a_user);
+}
+
+</script>
+
+</body>
+</html>
