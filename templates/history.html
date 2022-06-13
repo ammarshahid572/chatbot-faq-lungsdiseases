@@ -1,24 +1,29 @@
 <html>
 <body>
-
-<h1>JSON parse()</h1>
-
-<p>JSON.parse() parses a string, written in JSON format, and returns a JavaScript object.</p>
-
-<p>The value of "firstName" is:</p>
-
-<p id="demo"></p>
-
+    <link rel="stylesheet" href="/style.css" />
 <script>
 var data= '{{ data | tojson | safe}}';
 
 var obj = JSON.parse(data);
 
 console.log(obj.history);
+
+
 for (let chat in obj.history) {
-    console.log(chat);
-    console.log(obj.history[chat].a_user);
+    var user_message=document.createElement("p");
+    user_message.className="user_message";
+    user_message.innerHTML=obj.history[chat].a_user;
+    document.body.appendChild(user_message);
+    
+    var bot_message=document.createElement("p");
+    bot_message.className="bot_message";
+    bot_message.innerHTML=obj.history[chat].bot;
+    document.body.appendChild(bot_message);
+    
+    console.log(obj.history[chat]);
+    window.scrollTo(0, document.body.scrollHeight);
 }
+
 
 </script>
 

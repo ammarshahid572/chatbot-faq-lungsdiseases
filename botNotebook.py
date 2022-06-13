@@ -178,26 +178,26 @@ epsilon = 0.1
 next_stateIndex=0
 stateIndex=0
 actionNumber=0
+lastAction=0
 episodeRun=True
 reward=0
-
+actionNumber=0
 prevContext= ("nocontext", "nocontext", "nocontext", "nocontext", "nocontext")
 prevState=statetoNumber[prevContext]
 while episodeRun:
-
+    print("botnotebook")
     text=input("")
     state=getContext(text, numbertoState[prevState])
     stateIndex=statetoNumber[state]
 
     next_max = np.max(qTable[stateIndex])
     
-    old_value = qTable[prevState][actionNumber]
+    old_value = qTable[prevState][lastAction]
     print(old_value)
     new_value=(1 - alpha) * old_value + alpha * (reward + gamma * next_max)
     
-    qTable[prevState][actionNumber] = new_value
-
-    prevState=stateIndex
+    qTable[prevState][lastAction] = new_value
+    
     print(numbertoState[stateIndex])
 
     if np.random.uniform(0, 1) < epsilon:
@@ -213,8 +213,13 @@ while episodeRun:
     elif feedback=='n':
         reward=-1
     else:
-        episodeRun=False
+        break
+    
+    
 
+    prevState=stateIndex
+    lastAction=actionNumber
+    
 #print(qTable)
 
 

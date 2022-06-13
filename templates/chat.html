@@ -1,16 +1,57 @@
 <html>
-    <head>
-        <title>
-            Chat
-        </title>
-    </head>
-    <body>
-        <iframe name="history" id="history" >
+  <head>
+    <title>Chat</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
 
-        </iframe>
-        <form action="/history"  method="post" target="history">
-        <input name="chatMessage" id="chatMessage">
-        <input type="submit" value="submit"> 
-        </form>
-    </body>
+    <div class="bg-image"></div>
+    <div class="content-item">
+      <iframe name="history" id="history"> </iframe>
+      <div id="buttons" class="buttons" style="display: none">
+      <a id="good" onclick="giveReward(1)">
+        Good
+      </a>
+      <a id="bad" onclick="giveReward(-1)">
+        Bad
+      </a>
+      <a id="save" onclick="saveData()">
+        Save
+      </a>
+    </div>
+      <form style="float: right;"
+        action="/history"
+        method="post"
+        target="history"
+        onsubmit="openOptions()"
+      >
+        <input name="chatMessage" id="chatMessage" />
+        <input type="submit" value="submit" />
+      </form>
+    </div>
+
+    <script>
+      function openOptions() {
+        document.getElementById("buttons").style.display = "block";
+        
+      }
+
+      function hideOptions() {
+        document.getElementById("buttons").style.display = "none";
+        
+      }
+      function saveData() {
+        hideOptions();
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/save");
+        xhttp.send();
+      }
+      function giveReward(reward) {
+        hideOptions();
+        const xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "/reward?value=" + reward);
+        xhttp.send();
+      }
+    </script>
+  </body>
 </html>
